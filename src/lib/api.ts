@@ -50,8 +50,8 @@ async function mockDebate(req: DebateRequest): Promise<DebateResponse> {
   }
   const round = req.history.filter((t) => t.role === "user").length + (req.user_message ? 1 : 0);
   const text = req.user_message
-    ? MOCK_REBUTTALS[round % MOCK_REBUTTALS.length]
-    : MOCK_OPENERS[0].replace("{topic}", req.topic);
+    ? MOCK_REBUTTALS[round % MOCK_REBUTTALS.length]!
+    : MOCK_OPENERS[0]!.replace("{topic}", req.topic);
   return { ai_response: text, round };
 }
 
