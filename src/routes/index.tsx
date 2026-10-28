@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Loader2, Send, Swords, Trophy, User, RotateCcw, Zap } from "lucide-react";
+import { Loader2, Swords, Trophy, RotateCcw, Zap } from "lucide-react";
+import playerImg from "@/assets/player.png";
+import bossImg from "@/assets/ai-boss.png";
+import { rebuttalDamage, counterDamage, isWeak } from "@/lib/combat";
 import { sendDebate, isMockMode, setMockMode, type DebateTurn, type Stance } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -36,6 +39,11 @@ function Arena() {
   const [round, setRound] = useState(0);
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
+  const [playerHp, setPlayerHp] = useState(100);
+  const [aiHp, setAiHp] = useState(100);
+  const [hit, setHit] = useState<"player" | "boss" | null>(null);
+  const [mood, setMood] = useState<{ label: string; tone: string }>({ label: "Smug", tone: "calm" });
+  const ended = playerHp <= 0 || aiHp <= 0;
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,14 +58,28 @@ function Arena() {
 
   async function call(userMessage: string, prior: DebateTurn[]) {
     setLoading(true);
+    setMood({ label: "Thinking...", tone: "think" });
     try {
       const res = await sendDebate({ topic, stance, user_message: userMessage, history: prior });
       const next: DebateTurn[] = [...prior, ...(userMessage ? [{ role: "user" as const, content: userMessage }] : []), { role: "ai", content: res.ai_response }];
       setHistory(next);
       setAiText(res.ai_response);
       setRound(res.round);
+      if (userMessage) {
+        const dmg = rebuttalDamage(userMessage);
+        setAiHp((h) => Math.max(0, h - dmg));
+        setHit("boss");
+        setTimeout(() => {
+          setPlayerHp((h) => Math.max(0, h - counterDamage(dmg)));
+          setHit("player");
+          setTimeout(() => setHit(null), 500);
+        }, 600);
+        setMood(dmg >= 20 ? { label: "Defensive!", tone: "hurt" } : isWeak(dmg) ? { label: "Amused", tone: "calm" } : { label: "Irritated", tone: "angry" });
+        if (isWeak(dmg)) toast("Weak strike!", { description: "Back it up with evidence or reasoning." });
+      } else setMood({ label: "Smug", tone: "calm" });
       return true;
     } catch (e) {
+      setMood({ label: "Stunned", tone: "angry" });
       toast.error("The AI opponent didn't respond", { description: e instanceof Error ? e.message : String(e) });
       return false;
     } finally {
@@ -70,6 +92,8 @@ function Arena() {
     setStarted(true);
     setHistory([]);
     setAiText("");
+    setPlayerHp(100);
+    setAiHp(100);
     const ok = await call("", []);
     if (!ok) setStarted(false);
   }
@@ -87,6 +111,8 @@ function Arena() {
     setAiText("");
     setRound(0);
     setReply("");
+    setPlayerHp(100);
+    setAiHp(100);
   }
 
   return (
@@ -160,55 +186,57 @@ function Arena() {
 
         {/* Arena */}
         {started && (
-          <section className="grid gap-6 lg:grid-cols-2">
-            <div className={`rounded-xl border bg-card p-6 transition ${loading ? "border-primary shadow-glow" : "border-border"}`}>
-              <div className="flex items-center gap-3">
-                <div className={`grid h-11 w-11 place-items-center rounded-full bg-gradient-neon ${loading ? "animate-pulse" : ""}`}>
-                  <Bot className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <p className="font-display font-semibold">AI Opponent</p>
-                  <p className="font-mono text-xs text-muted-foreground">Arguing {stance === "for" ? "AGAINST" : "FOR"}</p>
-                </div>
+          <section className="space-y-6">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-4">
+              <Fighter side="player" name="You" sub={`Champion of ${stance.toUpperCase()}`} img={playerImg} hp={playerHp} hit={hit === "player"} />
+              <div className="vs-badge mb-24 font-display text-3xl font-bold md:text-5xl">VS</div>
+              <Fighter side="boss" name="Logos the Unbending" sub={`Arguing ${stance === "for" ? "AGAINST" : "FOR"}`} img={bossImg} hp={aiHp} hit={hit === "boss"} />
+            </div>
+
+            {/* Boss dialogue */}
+            <div className={`dialogue-box relative rounded-xl p-6 ${loading ? "dialogue-active" : ""}`}>
+              <div className="absolute -top-3 left-6 flex items-center gap-2">
+                <span className="rounded-md bg-boss px-2 py-0.5 font-display text-xs font-bold text-boss-foreground">LOGOS</span>
+                <span className={`mood-badge mood-${mood.tone}`}>{mood.label}</span>
               </div>
-              <div className="mt-5 min-h-40">
+              <div className="mt-2 min-h-24">
                 {loading ? (
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="text-sm">Thinking</span>
+                    <span className="font-mono text-sm">Channeling counter-argument</span>
                     <span className="typing-dot" /><span className="typing-dot [animation-delay:150ms]" /><span className="typing-dot [animation-delay:300ms]" />
                   </div>
                 ) : (
-                  <p className="animate-in fade-in slide-in-from-bottom-2 leading-relaxed duration-500">{aiText}</p>
+                  <p key={aiText} className="typewriter text-lg leading-relaxed">{aiText}</p>
                 )}
               </div>
             </div>
 
-            <form onSubmit={sendRebuttal} className="flex flex-col rounded-xl border border-border bg-card p-6">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-full border border-accent/50 bg-accent/10">
-                  <User className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <p className="font-display font-semibold">Your Rebuttal</p>
-                  <p className="font-mono text-xs text-muted-foreground">Arguing {stance.toUpperCase()}</p>
-                </div>
+            {/* Combat input */}
+            <form onSubmit={sendRebuttal} className="move-input rounded-xl p-5">
+              <div className="mb-3 flex items-center justify-between font-mono text-xs uppercase tracking-widest text-player">
+                <span>⟩ Choose your move</span>
+                <span className={reply.length > MAX_CHARS * 0.9 ? "text-destructive" : "text-muted-foreground"}>{reply.length}/{MAX_CHARS}</span>
               </div>
               <textarea
                 value={reply}
                 onChange={(e) => setReply(e.target.value.slice(0, MAX_CHARS))}
-                disabled={loading}
-                rows={6}
-                placeholder="Counter their argument…"
-                className="mt-5 flex-1 resize-none rounded-xl border border-input bg-background/60 p-4 outline-none transition focus:border-accent disabled:opacity-60"
+                disabled={loading || ended}
+                rows={4}
+                placeholder={ended ? "The battle is over." : "Type your rebuttal — evidence and reasoning hit harder…"}
+                className="w-full resize-none rounded-lg border border-player/30 bg-background/70 p-4 font-mono text-sm outline-none transition focus:border-player focus:shadow-player disabled:opacity-60"
               />
-              <div className="mt-3 flex items-center justify-between">
-                <span className={`font-mono text-xs ${reply.length > MAX_CHARS * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>{reply.length}/{MAX_CHARS}</span>
-                <button type="submit" disabled={!reply.trim() || loading} className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-40">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {loading ? "Sending…" : "Send Rebuttal"}
+              <div className="mt-4 flex justify-end">
+                <button type="submit" disabled={!reply.trim() || loading || ended} className="fire-btn inline-flex items-center gap-2 rounded-lg px-7 py-3 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-40">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>⚔️</span>}
+                  {loading ? "Striking…" : "Fire Rebuttal"}
                 </button>
               </div>
             </form>
+            {ended && (
+              <div className="rounded-xl border border-accent/50 bg-accent/10 p-6 text-center font-display text-2xl font-bold">
+                {aiHp <= 0 ? "🏆 Victory! The AI concedes." : "💀 Defeated. Try a new debate."}
+              </div>
+            )}
           </section>
         )}
 
@@ -229,6 +257,27 @@ function Arena() {
           </section>
         )}
       </main>
+    </div>
+  );
+}
+
+function Fighter({ side, name, sub, img, hp, hit }: { side: "player" | "boss"; name: string; sub: string; img: string; hp: number; hit: boolean }) {
+  const isPlayer = side === "player";
+  return (
+    <div className={`flex flex-col ${isPlayer ? "items-start" : "items-end"}`}>
+      <div className="mb-3 w-full">
+        <div className={`flex items-baseline justify-between font-display text-sm font-bold ${isPlayer ? "" : "flex-row-reverse"}`}>
+          <span>{name}</span>
+          <span className="font-mono text-xs text-muted-foreground">{hp} HP</span>
+        </div>
+        <div className="mt-1.5 h-3 overflow-hidden rounded-full border border-border bg-muted">
+          <div className={`hp-fill h-full ${isPlayer ? "bg-hp-player" : "bg-hp-boss ml-auto"}`} style={{ width: `${hp}%` }} />
+        </div>
+        <p className={`mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground ${isPlayer ? "" : "text-right"}`}>Confidence · {sub}</p>
+      </div>
+      <div className={`fighter-card ${isPlayer ? "aura-player" : "aura-boss"} ${hit ? "fighter-hit" : ""} ${hp <= 0 ? "opacity-40 grayscale" : ""}`}>
+        <img src={img} alt={name} width={816} height={816} className={`fighter-img ${isPlayer ? "" : "-scale-x-100"}`} />
+      </div>
     </div>
   );
 }
