@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Loader2, Send, Swords, Trophy, User, RotateCcw, Zap } from "lucide-react";
+import { Loader2, Swords, Trophy, RotateCcw, Zap } from "lucide-react";
 import playerImg from "@/assets/player.png";
 import bossImg from "@/assets/ai-boss.png";
 import { rebuttalDamage, counterDamage, isWeak } from "@/lib/combat";
