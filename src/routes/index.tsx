@@ -193,7 +193,7 @@ function Arena() {
             <div className={`speech-tail relative rounded-3xl bg-k-purple p-6 pt-8 pop-shadow transition md:p-8 ${loading ? "scale-[1.01]" : ""}`}>
               <div className="absolute -top-5 left-6 flex items-center gap-2">
                 <span className="rounded-full bg-k-red px-4 py-1.5 font-display text-sm font-bold pop-shadow-sm">🤖 LOGOS</span>
-                <span key={mood.label} className={`mood-badge rounded-full px-3 py-1.5 font-display text-sm font-bold pop-shadow-sm ${MOOD[mood.tone] ?? MOOD.calm}`}>{mood.label}</span>
+                <span key={mood.label} className={`mood-badge rounded-full px-3 py-1.5 font-display text-sm font-bold pop-shadow-sm ${MOOD[mood.tone] ?? MOOD["calm"]}`}>{mood.label}</span>
               </div>
               <div className="min-h-24">
                 {loading ? (
