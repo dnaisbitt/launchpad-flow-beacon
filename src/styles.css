@@ -4,36 +4,26 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
-  --font-display: "Orbitron", sans-serif;
-  --font-sans: "Inter Tight", sans-serif;
+  --font-display: "Fredoka", sans-serif;
+  --font-sans: "Nunito", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  --color-k-red: var(--k-red);
+  --color-k-yellow: var(--k-yellow);
+  --color-k-cyan: var(--k-cyan);
+  --color-k-purple: var(--k-purple);
+  --color-k-green: var(--k-green);
+  --color-k-ink: var(--k-ink);
   --color-success: var(--success);
   --color-player: var(--player);
   --color-boss: var(--boss);
   --color-boss-foreground: var(--primary-foreground);
-  --shadow-soft: 0 12px 40px -16px color-mix(in oklab, var(--primary) 35%, transparent);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -53,111 +43,76 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.16 0.02 260);
-  --foreground: oklch(0.96 0.01 260);
-  --card: oklch(0.2 0.025 265);
-  --card-foreground: oklch(0.96 0.01 260);
-  --popover: oklch(0.2 0.025 265);
-  --popover-foreground: oklch(0.96 0.01 260);
-  --primary: oklch(0.65 0.25 300);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.26 0.03 265);
-  --secondary-foreground: oklch(0.96 0.01 260);
-  --muted: oklch(0.3 0.03 265);
-  --muted-foreground: oklch(0.68 0.03 260);
-  --accent: oklch(0.82 0.15 200);
-  --accent-foreground: oklch(0.16 0.02 260);
-  --destructive: oklch(0.65 0.22 20);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.75 0.17 155);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.65 0.25 300);
-  --chart-1: oklch(0.65 0.25 300);
-  --chart-2: oklch(0.82 0.15 200);
-  --chart-3: oklch(0.75 0.17 155);
-  --chart-4: oklch(0.8 0.16 80);
-  --chart-5: oklch(0.65 0.22 20);
-  --sidebar: oklch(0.2 0.025 265);
-  --sidebar-foreground: oklch(0.96 0.01 260);
-  --sidebar-primary: oklch(0.65 0.25 300);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.26 0.03 265);
-  --sidebar-accent-foreground: oklch(0.96 0.01 260);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.25 300);
-  --player: oklch(0.82 0.15 200);
-  --boss: oklch(0.6 0.24 15);
-  --gradient-neon: linear-gradient(135deg, var(--primary), var(--accent));
+  --radius: 1rem;
+  --background: oklch(0.42 0.2 265);
+  --foreground: oklch(1 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.05 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.05 270);
+  --primary: oklch(0.55 0.22 300);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.02 265);
+  --secondary-foreground: oklch(0.25 0.05 270);
+  --muted: oklch(0.92 0.02 265);
+  --muted-foreground: oklch(0.5 0.04 270);
+  --accent: oklch(0.85 0.17 90);
+  --accent-foreground: oklch(0.25 0.05 270);
+  --destructive: oklch(0.6 0.23 25);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.7 0.18 150);
+  --border: oklch(0.88 0.03 265);
+  --input: oklch(0.88 0.03 265);
+  --ring: oklch(0.85 0.17 90);
+  --k-red: oklch(0.6 0.23 25);
+  --k-yellow: oklch(0.85 0.17 90);
+  --k-cyan: oklch(0.72 0.14 215);
+  --k-purple: oklch(0.55 0.22 300);
+  --k-green: oklch(0.68 0.18 150);
+  --k-ink: oklch(0.22 0.06 270);
+  --player: var(--k-cyan);
+  --boss: var(--k-red);
 }
-
-@utility bg-gradient-neon { background-image: var(--gradient-neon); }
-@utility text-gradient-neon { background-image: var(--gradient-neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
-@utility shadow-glow { box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 50%, transparent), 0 0 32px -6px color-mix(in oklab, var(--primary) 70%, transparent); }
-@utility arena-bg {
-  background-color: var(--background);
-  background-image: radial-gradient(60rem 30rem at 10% -10%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 60%),
-    radial-gradient(50rem 30rem at 100% 0%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 60%);
-}
-@utility typing-dot {
-  width: 6px; height: 6px; border-radius: 9999px; background: var(--primary);
-  animation: typing 1s infinite ease-in-out;
-}
-@keyframes typing { 0%,80%,100% { opacity: .25; transform: translateY(0) } 40% { opacity: 1; transform: translateY(-4px) } }
 
 @layer base {
-  * {
-    border-color: var(--color-border);
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-  }
+  * { border-color: var(--color-border); }
+  body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); }
 }
 
-@utility bg-hp-player { background-image: linear-gradient(90deg, oklch(0.6 0.15 220), var(--player)); box-shadow: 0 0 12px var(--player); }
-@utility bg-hp-boss { background-image: linear-gradient(90deg, var(--primary), var(--boss)); box-shadow: 0 0 12px var(--boss); }
-@utility shadow-player { box-shadow: 0 0 24px -6px var(--player); }
-@utility hp-fill { transition: width 0.8s cubic-bezier(.2,.8,.2,1); }
-@utility vs-badge { background-image: linear-gradient(180deg, var(--player), var(--boss)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--primary) 60%, transparent)); animation: pulse-vs 2s ease-in-out infinite; }
-@utility fighter-card { position: relative; aspect-ratio: 1; width: 100%; max-width: 20rem; border-radius: 1rem; background: radial-gradient(circle at 50% 60%, var(--aura) , transparent 65%); animation: idle 3.2s ease-in-out infinite; }
-@utility aura-player { --aura: color-mix(in oklab, var(--player) 45%, transparent); filter: drop-shadow(0 0 18px color-mix(in oklab, var(--player) 50%, transparent)); }
-@utility aura-boss { --aura: color-mix(in oklab, var(--boss) 45%, var(--primary) 25%); filter: drop-shadow(0 0 18px color-mix(in oklab, var(--boss) 60%, transparent)); animation-delay: -1.6s; }
+@utility arena-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 8% 20%, color-mix(in oklab, var(--k-purple) 45%, transparent) 0 8rem, transparent 8rem),
+    radial-gradient(circle at 92% 70%, color-mix(in oklab, var(--k-cyan) 35%, transparent) 0 10rem, transparent 10rem),
+    radial-gradient(circle at 85% 8%, color-mix(in oklab, var(--k-yellow) 25%, transparent) 0 5rem, transparent 5rem);
+}
+@utility pop-shadow { box-shadow: 0 6px 0 0 color-mix(in oklab, var(--k-ink) 55%, transparent); }
+@utility pop-shadow-sm { box-shadow: 0 4px 0 0 color-mix(in oklab, var(--k-ink) 45%, transparent); }
+@utility bouncy {
+  transition: transform .25s cubic-bezier(.34,1.8,.5,1), box-shadow .2s, filter .2s;
+  &:hover:not(:disabled) { transform: translateY(-3px) scale(1.04); filter: brightness(1.08); }
+  &:active:not(:disabled) { transform: translateY(3px) scale(.97); box-shadow: 0 1px 0 0 color-mix(in oklab, var(--k-ink) 55%, transparent); }
+}
+@utility typing-dot { width: 9px; height: 9px; border-radius: 9999px; background: var(--foreground); animation: typing 0.9s infinite ease-in-out; }
+@keyframes typing { 0%,80%,100% { opacity: .4; transform: translateY(0) } 40% { opacity: 1; transform: translateY(-6px) } }
+
+@utility hp-track { background: color-mix(in oklab, var(--k-ink) 35%, transparent); border: 3px solid var(--foreground); }
+@utility hp-fill { transition: width 0.9s cubic-bezier(.34,1.56,.64,1), background-color .4s; }
+@utility vs-badge { animation: wobble 1.6s ease-in-out infinite; text-shadow: 0 5px 0 var(--k-ink); }
+@utility avatar { position: relative; aspect-ratio: 1; width: 100%; max-width: 18rem; border-radius: 2rem; border: 6px solid var(--foreground); box-shadow: 0 10px 0 0 color-mix(in oklab, var(--k-ink) 55%, transparent); animation: bob 2.4s cubic-bezier(.45,0,.55,1) infinite; overflow: hidden; }
+@utility avatar-boss { animation-delay: -1.2s; }
 @utility fighter-img { width: 100%; height: 100%; object-fit: contain; }
 @utility fighter-hit { animation: hit 0.5s ease; }
-@utility dialogue-box { background: linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, var(--boss)), var(--card)); border: 2px solid color-mix(in oklab, var(--boss) 55%, transparent); box-shadow: inset 0 0 0 4px var(--background), inset 0 0 0 5px color-mix(in oklab, var(--primary) 35%, transparent); }
-@utility dialogue-active { box-shadow: inset 0 0 0 4px var(--background), inset 0 0 0 5px var(--primary), 0 0 32px -6px var(--boss); }
-@utility mood-badge { border-radius: 0.375rem; padding: 0.125rem 0.5rem; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; border: 1px solid; animation: pop 0.35s ease; }
-@utility mood-calm { color: var(--muted-foreground); border-color: var(--border); background: var(--card); }
-@utility mood-think { color: var(--primary); border-color: var(--primary); background: color-mix(in oklab, var(--primary) 15%, var(--card)); }
-@utility mood-hurt { color: var(--accent); border-color: var(--accent); background: color-mix(in oklab, var(--accent) 15%, var(--card)); }
-@utility mood-angry { color: var(--boss); border-color: var(--boss); background: color-mix(in oklab, var(--boss) 15%, var(--card)); }
+@utility speech-tail { &::after { content: ""; position: absolute; top: -18px; right: 3.5rem; border: 12px solid transparent; border-bottom: 10px solid var(--k-purple); border-top: 0; transform: scaleX(1.4); } }
+@utility mood-badge { animation: pop 0.45s cubic-bezier(.34,1.8,.5,1); }
 @utility typewriter { animation: reveal 0.9s steps(40) both; }
-@utility move-input { background: linear-gradient(135deg, color-mix(in oklab, var(--player) 8%, var(--card)), var(--card)); border: 1px solid color-mix(in oklab, var(--player) 40%, transparent); clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
-@utility fire-btn { color: var(--accent-foreground); background-image: linear-gradient(90deg, var(--player), oklch(0.9 0.12 180)); box-shadow: 0 0 24px -4px var(--player); clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: transform .15s, filter .15s; &:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); } &:active:not(:disabled) { transform: scale(0.97); } }
+@utility text-stroke { text-shadow: 0 2px 0 color-mix(in oklab, var(--k-ink) 45%, transparent); }
 
-@keyframes idle { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-@keyframes hit { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-10px); filter: brightness(2) saturate(0) } 40% { transform: translateX(8px) } 60% { transform: translateX(-5px) } }
-@keyframes pulse-vs { 0%,100% { transform: scale(1) } 50% { transform: scale(1.1) } }
-@keyframes pop { 0% { transform: scale(0.6); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-1.5deg) } 50% { transform: translateY(-10px) rotate(1.5deg) } }
+@keyframes wobble { 0%,100% { transform: rotate(-8deg) scale(1) } 50% { transform: rotate(8deg) scale(1.15) } }
+@keyframes hit { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-12px) rotate(-4deg); filter: brightness(1.6) } 40% { transform: translateX(10px) rotate(3deg) } 60% { transform: translateX(-6px) } }
+@keyframes pop { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0 } 100% { transform: scale(1) rotate(0); opacity: 1 } }
 @keyframes reveal { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }

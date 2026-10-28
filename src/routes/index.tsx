@@ -116,106 +116,101 @@ function Arena() {
   }
 
   return (
-    <div className="arena-bg min-h-screen text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-border bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+    <div className="arena-bg min-h-screen font-sans text-foreground">
+      <header className="sticky top-0 z-20 bg-k-ink/40 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-neon shadow-glow">
-              <Swords className="h-5 w-5 text-primary-foreground" />
+            <div className="grid h-11 w-11 rotate-[-6deg] place-items-center rounded-2xl bg-k-red pop-shadow-sm">
+              <Swords className="h-6 w-6 text-foreground" strokeWidth={3} />
             </div>
-            <span className="font-display text-xl font-bold tracking-tight">
-              DebateArena <span className="text-gradient-neon">AI</span>
+            <span className="font-display text-2xl font-bold tracking-tight text-stroke">
+              DebateArena <span className="text-k-yellow">AI!</span>
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={toggleMock} disabled={loading} className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:border-primary/60 disabled:opacity-50" aria-pressed={mock}>
-              <span className={`relative h-4 w-7 rounded-full transition ${mock ? "bg-primary" : "bg-muted"}`}>
-                <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-foreground transition-all ${mock ? "left-3.5" : "left-0.5"}`} />
+            <button onClick={toggleMock} disabled={loading} className="bouncy flex items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-extrabold text-card-foreground pop-shadow-sm disabled:opacity-50" aria-pressed={mock}>
+              <span className={`relative h-5 w-9 rounded-full transition ${mock ? "bg-k-green" : "bg-muted"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-card shadow transition-all ${mock ? "left-4.5" : "left-0.5"}`} />
               </span>
               <span className="hidden sm:inline">Demo Mode</span>
             </button>
-            <div className="flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent">
-              <Trophy className="h-3.5 w-3.5" /> Round {round}
+            <div className="flex items-center gap-1.5 rounded-full bg-k-yellow px-4 py-2 font-display text-sm font-bold text-k-ink pop-shadow-sm">
+              <Trophy className="h-4 w-4" strokeWidth={3} /> Round {round}
             </div>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-5 py-10">
-        {/* Setup */}
-        <section className="rounded-xl border border-border bg-card/60 p-6 backdrop-blur">
-          <h1 className="font-display text-3xl font-bold md:text-4xl">Choose your battle</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Pick a topic, take a side, and defend it against the AI.</p>
+        <section className="rounded-3xl bg-card p-6 text-card-foreground pop-shadow md:p-8">
+          <h1 className="font-display text-3xl font-bold md:text-5xl">Choose your battle!</h1>
+          <p className="mt-1 font-bold text-muted-foreground">Pick a topic, take a side, and defend it against the AI.</p>
 
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             disabled={started || loading}
             placeholder="Enter the topic or statement you want to debate..."
-            className="mt-5 w-full rounded-xl border border-input bg-background/60 px-4 py-3 outline-none transition focus:border-primary focus:shadow-glow disabled:opacity-60"
+            className="mt-5 w-full rounded-2xl border-4 border-border bg-secondary px-5 py-4 text-lg font-bold outline-none transition focus:border-k-purple disabled:opacity-60"
           />
-          <div className="mt-3 flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <button key={p} disabled={started || loading} onClick={() => setTopic(p)} className={`rounded-full border px-3 py-1 text-xs transition disabled:opacity-50 ${topic === p ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
-                {p}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {PRESETS.map((p, i) => (
+              <button key={p} disabled={started || loading} onClick={() => setTopic(p)} className={`bouncy rounded-full px-4 py-2 text-sm font-extrabold text-foreground pop-shadow-sm disabled:opacity-50 ${COLORS[i % 4]} ${topic === p ? "ring-4 ring-k-ink" : ""}`}>
+                {SHAPES[i % 4]} {p}
               </button>
             ))}
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="inline-flex rounded-xl border border-border bg-background/60 p-1">
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
               {(["for", "against"] as Stance[]).map((s) => (
-                <button key={s} disabled={started || loading} onClick={() => setStance(s)} className={`rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-60 ${stance === s ? (s === "for" ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground") : "text-muted-foreground hover:text-foreground"}`}>
-                  Argue {s.toUpperCase()}
+                <button key={s} disabled={started || loading} onClick={() => setStance(s)} className={`bouncy rounded-2xl px-5 py-3 font-display text-lg font-bold text-foreground pop-shadow-sm disabled:opacity-60 ${s === "for" ? "bg-k-green" : "bg-k-red"} ${stance === s ? "ring-4 ring-k-ink" : "opacity-60"}`}>
+                  {s === "for" ? "👍" : "👎"} Argue {s.toUpperCase()}
                 </button>
               ))}
             </div>
             {started ? (
-              <button onClick={reset} disabled={loading} className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-medium transition hover:border-primary/60 disabled:opacity-50">
-                <RotateCcw className="h-4 w-4" /> New debate
+              <button onClick={reset} disabled={loading} className="bouncy inline-flex items-center justify-center gap-2 rounded-2xl bg-secondary px-6 py-3 font-display text-lg font-bold pop-shadow-sm disabled:opacity-50">
+                <RotateCcw className="h-5 w-5" strokeWidth={3} /> New debate
               </button>
             ) : (
-              <button onClick={start} disabled={!topic.trim() || loading} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-neon px-6 py-3 font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02] disabled:scale-100 disabled:opacity-40 disabled:shadow-none">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                {loading ? "Entering arena…" : "Start Debate"}
+              <button onClick={start} disabled={!topic.trim() || loading} className="bouncy inline-flex items-center justify-center gap-2 rounded-2xl bg-k-purple px-8 py-4 font-display text-xl font-bold text-foreground pop-shadow disabled:opacity-40">
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" strokeWidth={3} />}
+                {loading ? "Entering arena…" : "Start Debate!"}
               </button>
             )}
           </div>
         </section>
 
-        {/* Arena */}
         {started && (
-          <section className="space-y-6">
+          <section className="space-y-8">
             <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-4">
-              <Fighter side="player" name="You" sub={`Champion of ${stance.toUpperCase()}`} img={playerImg} hp={playerHp} hit={hit === "player"} />
-              <div className="vs-badge mb-24 font-display text-3xl font-bold md:text-5xl">VS</div>
-              <Fighter side="boss" name="Logos the Unbending" sub={`Arguing ${stance === "for" ? "AGAINST" : "FOR"}`} img={bossImg} hp={aiHp} hit={hit === "boss"} />
+              <Fighter side="player" name="You" sub={`Team ${stance.toUpperCase()}`} img={playerImg} hp={playerHp} hit={hit === "player"} />
+              <div className="vs-badge mb-28 grid h-16 w-16 place-items-center rounded-full bg-k-yellow font-display text-2xl font-bold text-k-ink pop-shadow md:h-20 md:w-20 md:text-3xl">VS</div>
+              <Fighter side="boss" name="Logos the Unbending" sub={`Team ${stance === "for" ? "AGAINST" : "FOR"}`} img={bossImg} hp={aiHp} hit={hit === "boss"} />
             </div>
 
-            {/* Boss dialogue */}
-            <div className={`dialogue-box relative rounded-xl p-6 ${loading ? "dialogue-active" : ""}`}>
-              <div className="absolute -top-3 left-6 flex items-center gap-2">
-                <span className="rounded-md bg-boss px-2 py-0.5 font-display text-xs font-bold text-boss-foreground">LOGOS</span>
-                <span className={`mood-badge mood-${mood.tone}`}>{mood.label}</span>
+            <div className={`speech-tail relative rounded-3xl bg-k-purple p-6 pt-8 pop-shadow transition md:p-8 ${loading ? "scale-[1.01]" : ""}`}>
+              <div className="absolute -top-5 left-6 flex items-center gap-2">
+                <span className="rounded-full bg-k-red px-4 py-1.5 font-display text-sm font-bold pop-shadow-sm">🤖 LOGOS</span>
+                <span key={mood.label} className={`mood-badge rounded-full px-3 py-1.5 font-display text-sm font-bold pop-shadow-sm ${MOOD[mood.tone] ?? MOOD.calm}`}>{mood.label}</span>
               </div>
-              <div className="mt-2 min-h-24">
+              <div className="min-h-24">
                 {loading ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="font-mono text-sm">Channeling counter-argument</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-lg font-bold">Thinking up a comeback</span>
                     <span className="typing-dot" /><span className="typing-dot [animation-delay:150ms]" /><span className="typing-dot [animation-delay:300ms]" />
                   </div>
                 ) : (
-                  <p key={aiText} className="typewriter text-lg leading-relaxed">{aiText}</p>
+                  <p key={aiText} className="typewriter text-xl font-extrabold leading-relaxed text-stroke">{aiText}</p>
                 )}
               </div>
             </div>
 
-            {/* Combat input */}
-            <form onSubmit={sendRebuttal} className="move-input rounded-xl p-5">
-              <div className="mb-3 flex items-center justify-between font-mono text-xs uppercase tracking-widest text-player">
-                <span>⟩ Choose your move</span>
-                <span className={reply.length > MAX_CHARS * 0.9 ? "text-destructive" : "text-muted-foreground"}>{reply.length}/{MAX_CHARS}</span>
+            <form onSubmit={sendRebuttal} className="rounded-3xl bg-card p-5 text-card-foreground pop-shadow md:p-6">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="rounded-full bg-k-cyan px-3 py-1 font-display text-sm font-bold text-foreground">🎯 Your move</span>
+                <span className={`font-mono text-xs font-bold ${reply.length > MAX_CHARS * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>{reply.length}/{MAX_CHARS}</span>
               </div>
               <textarea
                 value={reply}
@@ -223,36 +218,41 @@ function Arena() {
                 disabled={loading || ended}
                 rows={4}
                 placeholder={ended ? "The battle is over." : "Type your rebuttal — evidence and reasoning hit harder…"}
-                className="w-full resize-none rounded-lg border border-player/30 bg-background/70 p-4 font-mono text-sm outline-none transition focus:border-player focus:shadow-player disabled:opacity-60"
+                className="w-full resize-none rounded-2xl border-4 border-border bg-secondary p-4 text-base font-bold outline-none transition focus:border-k-cyan disabled:opacity-60"
               />
               <div className="mt-4 flex justify-end">
-                <button type="submit" disabled={!reply.trim() || loading || ended} className="fire-btn inline-flex items-center gap-2 rounded-lg px-7 py-3 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-40">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>⚔️</span>}
+                <button type="submit" disabled={!reply.trim() || loading || ended} className="bouncy inline-flex items-center gap-3 rounded-full bg-k-red px-10 py-4 font-display text-xl font-bold text-foreground pop-shadow ring-4 ring-k-yellow disabled:opacity-40">
+                  {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <span>⚔️</span>}
                   {loading ? "Striking…" : "Fire Rebuttal"}
                 </button>
               </div>
             </form>
             {ended && (
-              <div className="rounded-xl border border-accent/50 bg-accent/10 p-6 text-center font-display text-2xl font-bold">
+              <div className={`mood-badge rounded-3xl p-6 text-center font-display text-3xl font-bold pop-shadow ${aiHp <= 0 ? "bg-k-green" : "bg-k-red"}`}>
                 {aiHp <= 0 ? "🏆 Victory! The AI concedes." : "💀 Defeated. Try a new debate."}
               </div>
             )}
           </section>
         )}
 
-        {/* History */}
         {history.length > 0 && (
-          <section className="rounded-xl border border-border bg-card/60 p-6">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Debate log</h2>
+          <section className="rounded-3xl bg-card p-6 text-card-foreground pop-shadow">
+            <h2 className="font-display text-2xl font-bold">📜 Battle log</h2>
             <div ref={logRef} className="mt-4 max-h-96 space-y-3 overflow-y-auto pr-2">
-              {history.map((t, i) => (
-                <div key={i} className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed ${t.role === "user" ? "border border-accent/30 bg-accent/10" : "border border-primary/30 bg-primary/10"}`}>
-                    <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t.role === "user" ? "You" : "AI"}</p>
-                    {t.content}
+              {history.map((t, i) => {
+                const c = t.role === "user" ? ["bg-k-cyan", "bg-k-green"][i % 2] : ["bg-k-red", "bg-k-purple"][i % 2];
+                return (
+                  <div key={i} className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`mood-badge max-w-[85%] rounded-2xl px-5 py-3 font-bold leading-relaxed text-foreground pop-shadow-sm ${c}`}>
+                      <p className="mb-1 flex items-center gap-1.5 font-display text-xs font-bold uppercase tracking-wider">
+                        <span className="grid h-5 w-5 place-items-center rounded-md bg-foreground/25 text-[10px]">{SHAPES[i % 4]}</span>
+                        {t.role === "user" ? "You" : "AI"}
+                      </p>
+                      {t.content}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -261,21 +261,31 @@ function Arena() {
   );
 }
 
+const COLORS = ["bg-k-red", "bg-k-cyan", "bg-k-yellow text-k-ink", "bg-k-green"];
+const SHAPES = ["▲", "◆", "●", "■"];
+const MOOD: Record<string, string> = {
+  calm: "bg-card text-card-foreground",
+  think: "bg-k-yellow text-k-ink",
+  hurt: "bg-k-cyan text-foreground",
+  angry: "bg-k-red text-foreground",
+};
+
 function Fighter({ side, name, sub, img, hp, hit }: { side: "player" | "boss"; name: string; sub: string; img: string; hp: number; hit: boolean }) {
   const isPlayer = side === "player";
+  const bar = hp > 60 ? "bg-k-green" : hp > 30 ? "bg-k-yellow" : "bg-k-red";
   return (
     <div className={`flex flex-col ${isPlayer ? "items-start" : "items-end"}`}>
-      <div className="mb-3 w-full">
-        <div className={`flex items-baseline justify-between font-display text-sm font-bold ${isPlayer ? "" : "flex-row-reverse"}`}>
-          <span>{name}</span>
-          <span className="font-mono text-xs text-muted-foreground">{hp} HP</span>
+      <div className="mb-4 w-full">
+        <div className={`flex items-center justify-between gap-2 ${isPlayer ? "" : "flex-row-reverse"}`}>
+          <span className={`rounded-full px-3 py-1 font-display text-sm font-bold pop-shadow-sm ${isPlayer ? "bg-k-cyan" : "bg-k-red"}`}>{isPlayer ? "◆" : "▲"} {name}</span>
+          <span className="rounded-full bg-card px-3 py-1 font-display text-sm font-bold text-card-foreground pop-shadow-sm">{hp} HP</span>
         </div>
-        <div className="mt-1.5 h-3 overflow-hidden rounded-full border border-border bg-muted">
-          <div className={`hp-fill h-full ${isPlayer ? "bg-hp-player" : "bg-hp-boss ml-auto"}`} style={{ width: `${hp}%` }} />
+        <div className="hp-track mt-2 h-6 overflow-hidden rounded-full">
+          <div className={`hp-fill h-full rounded-full ${bar} ${isPlayer ? "" : "ml-auto"}`} style={{ width: `${hp}%` }} />
         </div>
-        <p className={`mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground ${isPlayer ? "" : "text-right"}`}>Confidence · {sub}</p>
+        <p className={`mt-1 text-xs font-extrabold uppercase tracking-wider text-foreground/80 ${isPlayer ? "" : "text-right"}`}>Confidence · {sub}</p>
       </div>
-      <div className={`fighter-card ${isPlayer ? "aura-player" : "aura-boss"} ${hit ? "fighter-hit" : ""} ${hp <= 0 ? "opacity-40 grayscale" : ""}`}>
+      <div className={`avatar ${isPlayer ? "bg-k-cyan" : "avatar-boss bg-k-purple"} ${hit ? "fighter-hit" : ""} ${hp <= 0 ? "opacity-50 grayscale" : ""}`}>
         <img src={img} alt={name} width={816} height={816} className={`fighter-img ${isPlayer ? "" : "-scale-x-100"}`} />
       </div>
     </div>
