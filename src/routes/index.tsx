@@ -1,138 +1,233 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Loader2, Sparkles, Activity, Trash2 } from "lucide-react";
-import { submitQuery, getHealth, USE_MOCK, API_BASE_URL } from "@/lib/api";
+import { Bot, Loader2, Send, Swords, Trophy, User, RotateCcw, Zap } from "lucide-react";
+import { sendDebate, isMockMode, setMockMode, type DebateTurn, type Stance } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Signal — Query Console" },
-      { name: "description", content: "Send a query to the backend and get instant results." },
-      { property: "og:title", content: "Signal — Query Console" },
-      { property: "og:description", content: "Send a query to the backend and get instant results." },
+      { title: "DebateArena AI — Argue against an AI opponent" },
+      { name: "description", content: "Pick a topic, choose a side, and battle an AI debater round by round." },
+      { property: "og:title", content: "DebateArena AI" },
+      { property: "og:description", content: "Pick a topic, choose a side, and battle an AI debater round by round." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Index,
+  component: Arena,
 });
 
-interface Entry {
-  id: number;
-  query: string;
-  result: string;
-}
+const PRESETS = [
+  "AI will replace coders",
+  "Social media does more harm than good",
+  "Remote work beats the office",
+  "Space exploration is worth the cost",
+];
+const MAX_CHARS = 600;
 
-function Index() {
-  const [query, setQuery] = useState("");
+function Arena() {
+  const [mock, setMock] = useState(isMockMode());
+  const [topic, setTopic] = useState("");
+  const [stance, setStance] = useState<Stance>("for");
+  const [started, setStarted] = useState(false);
+  const [history, setHistory] = useState<DebateTurn[]>([]);
+  const [aiText, setAiText] = useState("");
+  const [round, setRound] = useState(0);
+  const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<Entry[]>([]);
-  const [health, setHealth] = useState<"loading" | "ok" | "down">("loading");
+  const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getHealth()
-      .then((h) => setHealth(h.status))
-      .catch(() => {
-        setHealth("down");
-        toast.error("Backend unreachable", { description: API_BASE_URL });
-      });
-  }, []);
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+  }, [history]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim() || loading) return;
+  const toggleMock = () => {
+    setMockMode(!mock);
+    setMock(!mock);
+    toast(mock ? "Live API mode" : "Demo mode on", { description: mock ? "Requests go to your backend." : "Using mock responses." });
+  };
+
+  async function call(userMessage: string, prior: DebateTurn[]) {
     setLoading(true);
     try {
-      const res = await submitQuery({ query: query.trim() });
-      setHistory((h) => [{ id: Date.now(), query: query.trim(), result: res.result }, ...h]);
-      setQuery("");
-      toast.success("Result ready");
-    } catch (err) {
-      toast.error("Request failed", { description: err instanceof Error ? err.message : String(err) });
+      const res = await sendDebate({ topic, stance, user_message: userMessage, history: prior });
+      const next: DebateTurn[] = [...prior, ...(userMessage ? [{ role: "user" as const, content: userMessage }] : []), { role: "ai", content: res.ai_response }];
+      setHistory(next);
+      setAiText(res.ai_response);
+      setRound(res.round);
+      return true;
+    } catch (e) {
+      toast.error("The AI opponent didn't respond", { description: e instanceof Error ? e.message : String(e) });
+      return false;
     } finally {
       setLoading(false);
     }
   }
 
+  async function start() {
+    if (!topic.trim() || loading) return;
+    setStarted(true);
+    setHistory([]);
+    setAiText("");
+    const ok = await call("", []);
+    if (!ok) setStarted(false);
+  }
+
+  async function sendRebuttal(e: React.FormEvent) {
+    e.preventDefault();
+    const msg = reply.trim();
+    if (!msg || loading) return;
+    if (await call(msg, history)) setReply("");
+  }
+
+  function reset() {
+    setStarted(false);
+    setHistory([]);
+    setAiText("");
+    setRound(0);
+    setReply("");
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2 font-display text-lg font-bold">
-            <Sparkles className="h-5 w-5 text-primary" /> Signal
-          </div>
-          <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
-            {USE_MOCK && <span className="rounded-full bg-accent px-2 py-1 text-accent-foreground">MOCK MODE</span>}
-            <span className="flex items-center gap-1.5">
-              {health === "loading" ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Activity className={health === "ok" ? "h-3.5 w-3.5 text-success" : "h-3.5 w-3.5 text-destructive"} />
-              )}
-              {health === "loading" ? "checking" : health}
+    <div className="arena-bg min-h-screen text-foreground">
+      {/* Header */}
+      <header className="sticky top-0 z-20 border-b border-border bg-background/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-neon shadow-glow">
+              <Swords className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="font-display text-xl font-bold tracking-tight">
+              DebateArena <span className="text-gradient-neon">AI</span>
             </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={toggleMock} disabled={loading} className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:border-primary/60 disabled:opacity-50" aria-pressed={mock}>
+              <span className={`relative h-4 w-7 rounded-full transition ${mock ? "bg-primary" : "bg-muted"}`}>
+                <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-foreground transition-all ${mock ? "left-3.5" : "left-0.5"}`} />
+              </span>
+              <span className="hidden sm:inline">Demo Mode</span>
+            </button>
+            <div className="flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent">
+              <Trophy className="h-3.5 w-3.5" /> Round {round}
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-16">
-        <h1 className="font-display text-5xl font-bold tracking-tight text-foreground md:text-6xl">
-          Ask anything<span className="text-primary">.</span>
-        </h1>
-        <p className="mt-3 max-w-lg text-muted-foreground">
-          Type a query and the backend will process it. Try including “error” to see failure handling.
-        </p>
+      <main className="mx-auto max-w-6xl space-y-8 px-5 py-10">
+        {/* Setup */}
+        <section className="rounded-xl border border-border bg-card/60 p-6 backdrop-blur">
+          <h1 className="font-display text-3xl font-bold md:text-4xl">Choose your battle</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Pick a topic, take a side, and defend it against the AI.</p>
 
-        <form onSubmit={onSubmit} className="mt-10 flex gap-2 rounded-2xl border border-border bg-card p-2 shadow-soft">
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            disabled={loading}
-            placeholder="e.g. Summarise last week's sales"
-            className="flex-1 bg-transparent px-4 py-3 text-foreground outline-none placeholder:text-muted-foreground"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            disabled={started || loading}
+            placeholder="Enter the topic or statement you want to debate..."
+            className="mt-5 w-full rounded-xl border border-input bg-background/60 px-4 py-3 outline-none transition focus:border-primary focus:shadow-glow disabled:opacity-60"
           />
-          <button
-            type="submit"
-            disabled={loading || !query.trim()}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-            {loading ? "Running" : "Submit"}
-          </button>
-        </form>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {PRESETS.map((p) => (
+              <button key={p} disabled={started || loading} onClick={() => setTopic(p)} className={`rounded-full border px-3 py-1 text-xs transition disabled:opacity-50 ${topic === p ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
+                {p}
+              </button>
+            ))}
+          </div>
 
-        <section className="mt-12 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Results</h2>
-            {history.length > 0 && (
-              <button onClick={() => setHistory([])} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                <Trash2 className="h-3.5 w-3.5" /> Clear
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="inline-flex rounded-xl border border-border bg-background/60 p-1">
+              {(["for", "against"] as Stance[]).map((s) => (
+                <button key={s} disabled={started || loading} onClick={() => setStance(s)} className={`rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-60 ${stance === s ? (s === "for" ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground") : "text-muted-foreground hover:text-foreground"}`}>
+                  Argue {s.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            {started ? (
+              <button onClick={reset} disabled={loading} className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-medium transition hover:border-primary/60 disabled:opacity-50">
+                <RotateCcw className="h-4 w-4" /> New debate
+              </button>
+            ) : (
+              <button onClick={start} disabled={!topic.trim() || loading} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-neon px-6 py-3 font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02] disabled:scale-100 disabled:opacity-40 disabled:shadow-none">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                {loading ? "Entering arena…" : "Start Debate"}
               </button>
             )}
           </div>
-
-          {loading && (
-            <div className="animate-pulse rounded-2xl border border-border bg-card p-6">
-              <div className="h-3 w-1/3 rounded bg-muted" />
-              <div className="mt-4 h-3 w-full rounded bg-muted" />
-              <div className="mt-2 h-3 w-4/5 rounded bg-muted" />
-            </div>
-          )}
-
-          {!loading && history.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              No results yet.
-            </div>
-          )}
-
-          {history.map((h) => (
-            <article key={h.id} className="rounded-2xl border border-border bg-card p-6">
-              <p className="font-mono text-xs text-primary">› {h.query}</p>
-              <p className="mt-3 leading-relaxed text-card-foreground">{h.result}</p>
-            </article>
-          ))}
         </section>
+
+        {/* Arena */}
+        {started && (
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className={`rounded-xl border bg-card p-6 transition ${loading ? "border-primary shadow-glow" : "border-border"}`}>
+              <div className="flex items-center gap-3">
+                <div className={`grid h-11 w-11 place-items-center rounded-full bg-gradient-neon ${loading ? "animate-pulse" : ""}`}>
+                  <Bot className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="font-display font-semibold">AI Opponent</p>
+                  <p className="font-mono text-xs text-muted-foreground">Arguing {stance === "for" ? "AGAINST" : "FOR"}</p>
+                </div>
+              </div>
+              <div className="mt-5 min-h-40">
+                {loading ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span className="text-sm">Thinking</span>
+                    <span className="typing-dot" /><span className="typing-dot [animation-delay:150ms]" /><span className="typing-dot [animation-delay:300ms]" />
+                  </div>
+                ) : (
+                  <p className="animate-in fade-in slide-in-from-bottom-2 leading-relaxed duration-500">{aiText}</p>
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={sendRebuttal} className="flex flex-col rounded-xl border border-border bg-card p-6">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-full border border-accent/50 bg-accent/10">
+                  <User className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="font-display font-semibold">Your Rebuttal</p>
+                  <p className="font-mono text-xs text-muted-foreground">Arguing {stance.toUpperCase()}</p>
+                </div>
+              </div>
+              <textarea
+                value={reply}
+                onChange={(e) => setReply(e.target.value.slice(0, MAX_CHARS))}
+                disabled={loading}
+                rows={6}
+                placeholder="Counter their argument…"
+                className="mt-5 flex-1 resize-none rounded-xl border border-input bg-background/60 p-4 outline-none transition focus:border-accent disabled:opacity-60"
+              />
+              <div className="mt-3 flex items-center justify-between">
+                <span className={`font-mono text-xs ${reply.length > MAX_CHARS * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>{reply.length}/{MAX_CHARS}</span>
+                <button type="submit" disabled={!reply.trim() || loading} className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-40">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {loading ? "Sending…" : "Send Rebuttal"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* History */}
+        {history.length > 0 && (
+          <section className="rounded-xl border border-border bg-card/60 p-6">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Debate log</h2>
+            <div ref={logRef} className="mt-4 max-h-96 space-y-3 overflow-y-auto pr-2">
+              {history.map((t, i) => (
+                <div key={i} className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed ${t.role === "user" ? "border border-accent/30 bg-accent/10" : "border border-primary/30 bg-primary/10"}`}>
+                    <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{t.role === "user" ? "You" : "AI"}</p>
+                    {t.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
